@@ -109,15 +109,46 @@
   function initSliders() {
     qsa(".slider-nav[data-target]").forEach(function (nav) {
       var track = document.getElementById(nav.getAttribute("data-target"));
-      if (!track) return;
+      var viewport = track && track.parentElement;
+      if (!track || !viewport) return;
       var prev = qs(".slider-prev", nav);
       var next = qs(".slider-next", nav);
-      function step() {
+      var offset = 0; // current translateX, in px (0 = start)
+
+      function cardStep() {
         var card = track.firstElementChild;
-        return card ? card.getBoundingClientRect().width + 18 : 280;
+        if (!card) return 280;
+        var gapStr = window.getComputedStyle(track).columnGap || window.getComputedStyle(track).gap || "18px";
+        var gap = parseFloat(gapStr) || 18;
+        return card.getBoundingClientRect().width + gap;
       }
-      if (prev) prev.addEventListener("click", function () { track.scrollBy({ left: -step(), behavior: "smooth" }); });
-      if (next) next.addEventListener("click", function () { track.scrollBy({ left: step(), behavior: "smooth" }); });
+      function maxOffset() {
+        return Math.max(0, track.scrollWidth - viewport.clientWidth);
+      }
+      // How many whole cards fit in the visible viewport - we page by
+      // exactly this many at a time, so a card is never left half-cropped
+      // at the edge; anything that doesn't fit stays reachable only via
+      // the arrow buttons (per "не влазить - не додавай, буде в скролі").
+      function cardsPerView() {
+        return Math.max(1, Math.floor(viewport.clientWidth / cardStep()));
+      }
+      function apply() {
+        track.style.transform = "translateX(-" + offset + "px)";
+      }
+      function goNext() {
+        offset = Math.min(offset + cardStep() * cardsPerView(), maxOffset());
+        apply();
+      }
+      function goPrev() {
+        offset = Math.max(offset - cardStep() * cardsPerView(), 0);
+        apply();
+      }
+      if (prev) prev.addEventListener("click", goPrev);
+      if (next) next.addEventListener("click", goNext);
+      window.addEventListener("resize", function () {
+        offset = Math.min(offset, maxOffset());
+        apply();
+      });
     });
   }
 
