@@ -156,7 +156,12 @@ h4,.h4{ font-weight:700; font-size:1.02rem; line-height:1.35; margin:0; color:va
 .hero{ padding:64px 0 56px; background:linear-gradient(180deg, var(--navy-tint), #fff 90%); }
 .hero-inner{ max-width:760px; }
 .hero-inner .lede{ margin-top:16px; }
-.hero-inner-split{ display:grid; grid-template-columns:1.4fr 0.9fr; gap:48px; align-items:start; }
+.hero-inner-split{ display:grid; grid-template-columns:1.4fr 0.9fr; gap:48px; align-items:center; }
+/* hero-tight (About page): keep the photo placeholder vertically centred
+   against the row as before, but pin the text column to the top of the
+   row so the heading sits right under the breadcrumbs instead of being
+   centred down to match the taller image column. */
+.hero-tight .hero-copy{ align-self:start; }
 .hero-copy{ max-width:640px; }
 .hero-copy .lede{ margin-top:16px; }
 .hero-figure{ background:#fff; border:1px solid var(--line); box-shadow:var(--shadow-m); border-radius:var(--radius-l); aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; color:var(--navy); opacity:0.55; }
@@ -337,8 +342,17 @@ body.modal-open{ overflow:hidden; }
   transition:transform .3s ease;
   will-change:transform;
 }
-.card-slider-track .team-card{ flex:0 0 260px; }
-.card-slider-track.adv-slider-track .adv-card{ flex:0 0 300px; }
+/* Card width is a percentage of the viewport (not a fixed px value) so
+   exactly N whole cards fill the row with no leftover slack - the row
+   never "almost" fits a 4th/extra card, which was the root of the
+   perceived-cropping complaint. 3 per row on desktop/tablet-wide, 2 on
+   tablet, 1 (near-full-width) on mobile. */
+.card-slider-track .team-card,
+.card-slider-track.adv-slider-track .adv-card{ flex:0 0 calc((100% - 2 * 18px) / 3); min-width:220px; }
+@media (max-width:900px){
+  .card-slider-track .team-card,
+  .card-slider-track.adv-slider-track .adv-card{ flex-basis:calc((100% - 18px) / 2); min-width:0; }
+}
 .team-photo{ width:100%; aspect-ratio:4/3.4; border-radius:var(--radius-s); background:var(--paper-2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; color:var(--line); margin-bottom:14px; }
 /* Nav sits in the section's head-row (top-right, next to the heading)
    instead of below the cards. */

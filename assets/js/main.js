@@ -47,22 +47,17 @@
   }
 
   // ------------------------------------------------------------------
-  // Language switch - visual only (site currently has Ukrainian copy only;
-  // English version is prepared later, not invented here)
+  // Language switch - real links generated per-page by the backend
+  // (templates.py / link()). The only thing JS needs to do is carry the
+  // current ?slug= (or any other query string) across the switch, since
+  // service.html is one shared template addressed via query param and
+  // the backend link() helper has no way to know it at build time.
   // ------------------------------------------------------------------
   function initLangSwitch() {
-    var wrap = qs("#lang-switch");
-    if (!wrap) return;
-    qsa(".lang-opt", wrap).forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        if (btn.getAttribute("data-lang") === "en") {
-          btn.classList.add("lang-soon");
-          setTimeout(function () { btn.classList.remove("lang-soon"); }, 1400);
-          return;
-        }
-        qsa(".lang-opt", wrap).forEach(function (b) { b.classList.remove("active"); });
-        btn.classList.add("active");
-      });
+    var search = window.location.search;
+    if (!search) return;
+    qsa(".js-lang-switch").forEach(function (a) {
+      a.setAttribute("href", a.getAttribute("href") + search);
     });
   }
 
@@ -202,6 +197,11 @@
     if (!nameEl) return; // not the service template page
 
     var base = basePath();
+    var lang = document.body.getAttribute("data-lang") || "uk";
+    var bcLabels = {
+      uk: { home: "Головна", services: "Послуги" },
+      en: { home: "Home", services: "Services" }
+    }[lang];
     var params = new URLSearchParams(window.location.search);
     var slug = params.get("slug");
     var svc = slug ? serviceBySlug(slug) : null;
@@ -213,8 +213,8 @@
       if (nf) nf.hidden = false;
       var bc0 = qs("#service-breadcrumbs");
       if (bc0) bc0.innerHTML =
-        '<a href="' + base + 'index.html">Головна</a><span class="bc-sep">' + iconSvg("chevron-right", 13) + '</span>' +
-        '<a href="' + base + 'services.html">Послуги</a>';
+        '<a href="' + base + 'index.html">' + bcLabels.home + '</a><span class="bc-sep">' + iconSvg("chevron-right", 13) + '</span>' +
+        '<a href="' + base + 'services.html">' + bcLabels.services + '</a>';
       return;
     }
 
@@ -226,8 +226,8 @@
     var bc = qs("#service-breadcrumbs");
     if (bc) {
       bc.innerHTML =
-        '<a href="' + base + 'index.html">Головна</a><span class="bc-sep">' + iconSvg("chevron-right", 13) + '</span>' +
-        '<a href="' + base + 'services.html">Послуги</a><span class="bc-sep">' + iconSvg("chevron-right", 13) + '</span>' +
+        '<a href="' + base + 'index.html">' + bcLabels.home + '</a><span class="bc-sep">' + iconSvg("chevron-right", 13) + '</span>' +
+        '<a href="' + base + 'services.html">' + bcLabels.services + '</a><span class="bc-sep">' + iconSvg("chevron-right", 13) + '</span>' +
         '<span class="bc-current">' + svc.name + '</span>';
     }
 
